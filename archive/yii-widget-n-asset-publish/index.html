@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="levin" />
+        <meta name="copyright" content="levin" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="PHP, Web, " />
+
+<meta property="og:title" content="yii框架widget和注册asset的例子 "/>
+<meta property="og:url" content="http://www.bicky.me/archive/yii-widget-n-asset-publish/" />
+<meta property="og:description" content="yii里的挂件(widget)是个好东西，重用方便、移动灵活，多处会用到的代码可以写成一个widget来统一管理。 yii的asset管理也是比较方便的，可以将一个js或者css插件 ..." />
+<meta property="og:site_name" content="bicky.me" />
+<meta property="og:article:author" content="levin" />
+<meta property="og:article:published_time" content="2014-01-25T21:25:00" />
+<meta name="twitter:title" content="yii框架widget和注册asset的例子 ">
+<meta name="twitter:description" content="yii里的挂件(widget)是个好东西，重用方便、移动灵活，多处会用到的代码可以写成一个widget来统一管理。 yii的asset管理也是比较方便的，可以将一个js或者css插件 ...">
+
+        <title>yii框架widget和注册asset的例子  · bicky.me
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="http://www.bicky.me/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="http://www.bicky.me/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="http://www.bicky.me/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="http://www.bicky.me/theme/css/custom.css" media="screen">
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-42652171-1', 'auto');
+    ga('send', 'pageview');
+</script>
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <div class="span1"></div>
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="http://www.bicky.me/"><span class=site-name>bicky.me</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="http://www.bicky.me">Home</a></li>
+                            <li ><a href="http://www.bicky.me/categories.html">Categories</a></li>
+                            <li ><a href="http://www.bicky.me/tags.html">Tags</a></li>
+                            <li ><a href="http://www.bicky.me/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="http://www.bicky.me/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="http://www.bicky.me/archive/yii-widget-n-asset-publish/"> yii框架widget和注册asset的例子  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+
+            
+            <p>yii里的挂件(widget)是个好东西，重用方便、移动灵活，多处会用到的代码可以写成一个widget来统一管理。</p>
+<p>yii的asset管理也是比较方便的，可以将一个js或者css插件，甚至是js和css混合的插件弄成一个模块再发布到资源文件夹下，免除了自己手动分类管理js和css文件的步骤。<!-- more --></p>
+<p>下面举一个将
+<a href="/url.html#http://www.my97.net/">my97 datepicker</a>
+插件发布到asset下并封装成一个widget的例子。</p>
+<p>首先在项目的protected文件夹下建立widgets文件夹，接着在widgets下建立我们需要的插件文件夹，例如dp。文件目录结构如下：</p>
+<div class="highlight"><pre><span class="o">-</span><span class="n">protected</span>
+  <span class="o">-</span><span class="n">widgets</span>
+    <span class="o">-</span><span class="n">dp</span>
+      <span class="o">-</span><span class="n">my97</span>
+        <span class="o">-</span><span class="err">此处放入</span><span class="n">my97</span> <span class="n">datepicker</span><span class="err">的文件包</span>
+      <span class="o">-</span><span class="n">views</span>
+        <span class="o">-</span><span class="n">index</span><span class="p">.</span><span class="n">php</span>
+      <span class="o">-</span><span class="n">DpWidget</span><span class="p">.</span><span class="n">php</span>
+</pre></div>
+
+
+<p>再编辑DpWidget.php文件：</p>
+<div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">DpWidget</span> <span class="k">extends</span> <span class="nx">CWidget</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">init</span><span class="p">(){}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">run</span><span class="p">(){</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">render</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>因为只是调用js和css插件，所以我们只需要直接调用视图文件即可，接着在视图文件里将datepicker打个包发布：</p>
+<div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="sd">/**</span>
+<span class="sd"> * my97日期控件widget</span>
+<span class="sd"> */</span>
+<span class="nv">$my97_path</span> <span class="o">=</span> <span class="nx">Yii</span><span class="o">::</span><span class="na">app</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">assetManager</span><span class="o">-&gt;</span><span class="na">publish</span><span class="p">(</span>
+    <span class="nb">dirname</span><span class="p">(</span><span class="nb">dirname</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">))</span><span class="o">.</span><span class="s1">&#39;/my97/&#39;</span>
+<span class="p">);</span>
+
+<span class="nx">Yii</span><span class="o">::</span><span class="na">app</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">getClientScript</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">registerScriptFile</span><span class="p">(</span><span class="nv">$my97_path</span><span class="o">.</span><span class="s1">&#39;/WdatePicker.js&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>值得注意的是在publish方法里参数是datepicker的整个文件夹，yii会遍历这个文件夹并将下面的js、css和图片等文件一一注册。
+在注册完毕后，需要将datepicker其中的主js文件引用出来完成对datepicker的调用，此时执行yii的引用js脚本函数即可。widget封装完成。</p>
+<p>最后，可以在项目里调用这个widget啦：</p>
+<div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="na">beginWidget</span><span class="p">(</span><span class="s1">&#39;application.widgets.dp.DpWidget&#39;</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="na">endWidget</span><span class="p">();</span>
+</pre></div>
+
+
+<p>虽然yii的资源管理很方便，但是在注册资源多了以后也可能会发生效率低下的问题，基本上原因在于每次调用<code>assetManager</code>的<code>publish</code>方法时都强制将文件拷贝到资源文件夹下了。
+当然，开发的时候，这样比较方便，改动了js、css文件能马上看出效果，但是在线上环境时就加大了服务器的负担。
+要解决这个问题只要将<code>CAssetManager</code>类里的<code>publish</code>方法的第四个参数<code>$forceCopy</code>设置为<code>YII_DEBUG</code>常量就好了，在生产环境时强制复制资源文件，在线上环境不强制复制。</p>
+            
+            <section>
+<div class="accordion" id="accordion2">
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle disqus-comment-count" data-toggle="collapse" data-parent="#accordion2"
+                    data-disqus-identifier="201401252125"
+                href="http://www.bicky.me/archive/yii-widget-n-asset-publish/#disqus_thread">
+                Comments
+            </a>
+        </div>
+        <div id="disqus_thread" class="accordion-body collapse">
+            <div class="accordion-inner">
+                <div class="comments">
+                    <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'levinxo';
+        var disqus_identifier = '201401252125';
+    var disqus_url = 'http://www.bicky.me/archive/yii-widget-n-asset-publish/';
+
+    (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="http://www.bicky.me/archive/mysql-produce-unique-keys/" title="Previous: 利用mysql生成唯一序号">利用mysql生成唯一序号</a></li>
+                <li class="next-article"><a href="http://www.bicky.me/archive/implement-random-number-generator-myself-in-php/" title="Next: 在php里编写自己的随机数发生器">在php里编写自己的随机数发生器</a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2014-01-25T21:25:00"> 1 25, 2014</time>
+            <h4>Category</h4>
+            <a class="category-link" href="http://www.bicky.me/categories.html#web-ref">Web</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="http://www.bicky.me/tags.html#php-ref">PHP
+                    <span>12</span>
+</a></li>
+            </ul>
+<h4>Contact</h4>
+    <a href="#" title="My You can add links in your config file Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-you can add links in your config file sidebar-social-links"></i></a>
+    <a href="#" title="My Another social link Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-another social link sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-license">&copy; 2012-2014 <a href="/">bicky.me</a>. <a rel="nofollow" href="https://creativecommons.org/licenses/by-sa/4.0/">Some Rights Reserved</a>.</li>
+        <li class="elegant-power">Powered by <a href="http://getpelican.com" rel="nofollow" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" rel="nofollow" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" rel="nofollow" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+            <script type="text/javascript">
+var disqus_shortname = 'levinxo';
+(function () {
+    var s = document.createElement('script'); s.async = true;
+    s.type = 'text/javascript';
+    s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+<script  language="javascript" type="text/javascript">
+function uncollapse() {
+    if (window.location.hash.match(/^#comment-\d+$/)) {
+        $('#disqus_thread').collapse('show');
+    }
+}
+</script>
+<script type="text/javascript" language="JavaScript">
+uncollapse();
+window.onhashchange=function(){
+    if (window.location.hash.match(/^#comment-\d+$/))
+        window.location.reload(true);
+}
+</script>
+<script>
+$('#disqus_thread').on('shown', function () {
+    var link = document.getElementsByClassName('accordion-toggle');
+    var old_innerHTML = link[0].innerHTML;
+    $(link[0]).fadeOut(500, function() {
+        $(this).text('Click here to hide comments').fadeIn(500);
+    });
+    $('#disqus_thread').on('hidden', function () {
+        $(link[0]).fadeOut(500, function() {
+            $(this).text(old_innerHTML).fadeIn(500);
+        });
+    })
+})
+</script>
+
+
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /theme/
+Disallow: /img/
+Disallow: /url.html
+Disallow: /tipuesearch_content.json
+
+Sitemap: http://www.bicky.me/sitemap.xml
